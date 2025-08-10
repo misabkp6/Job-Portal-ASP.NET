@@ -1,0 +1,48 @@
+@inject SignInManager<IdentityUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header text-white py-3" style="background: linear-gradient(90deg, var(--primary-color, #3498db), var(--secondary-color, #2ecc71));">
+        <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Account Settings</h5>
+    </div>
+    <div class="card-body p-3">
+        <ul class="nav nav-pills flex-column profile-nav">
+            <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index"><i class="fas fa-user me-2"></i>Profile</a></li>
+            <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email"><i class="fas fa-envelope me-2"></i>Email</a></li>
+            <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword"><i class="fas fa-key me-2"></i>Password</a></li>
+            @if (hasExternalLogins)
+            {
+                <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins"><i class="fas fa-link me-2"></i>External logins</a></li>
+            }
+            <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication"><i class="fas fa-shield-alt me-2"></i>Two-factor authentication</a></li>
+            <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData"><i class="fas fa-database me-2"></i>Personal data</a></li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .profile-nav .nav-link {
+        padding: 12px 15px;
+        border-radius: 5px;
+        margin-bottom: 8px;
+        font-weight: 500;
+        background-color: #e9ecef;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+        color: #495057 !important;
+        font-size: 1rem;
+    }
+    
+    .profile-nav .nav-link:hover {
+        background-color: #dee2e6;
+        border-left: 3px solid var(--primary-color, #3498db);
+    }
+    
+    .profile-nav .nav-link.active {
+        background-color: var(--primary-color, #3498db) !important;
+        color: white !important;
+        border-left: 3px solid #2980b9;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+</style>

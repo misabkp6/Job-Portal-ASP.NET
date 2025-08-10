@@ -1,0 +1,192 @@
+@model X.PagedList.IPagedList<JobPortal.Models.Application>
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+@using JobPortal.Models.Enums
+
+@{
+    ViewData["Title"] = "My Applications";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">My Applications</h1>
+        <a asp-controller="Job" asp-action="Index" class="btn btn-primary">
+            <i class="fas fa-search me-2"></i>Browse More Jobs
+        </a>
+    </div>
+    
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>You haven't applied to any jobs yet. 
+            <a asp-controller="Job" asp-action="Index">Browse available jobs</a> to start applying.
+        </div>
+    }
+    else
+    {
+        <!-- Application Statistics Dashboard -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-primary mb-2">@ViewBag.TotalApplications</div>
+                        <div class="text-muted">Total Applications</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-info mb-2">@ViewBag.PendingApplications</div>
+                        <div class="text-muted">In Progress</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-success mb-2">@ViewBag.SuccessfulApplications</div>
+                        <div class="text-muted">Accepted</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-danger mb-2">@ViewBag.RejectedApplications</div>
+                        <div class="text-muted">Rejected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Applied On</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var app in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="fw-medium">@app.Job?.Title</span>
+                                </td>
+                                <td>@app.Job?.Company</td>
+                                <td>@app.AppliedOn.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div>
+                                        @if (app.Status == ApplicationStatus.Submitted)
+                                        {
+                                            <span class="badge bg-primary">@app.Status</span>
+                                        }
+                                        else if (app.Status == ApplicationStatus.UnderReview || app.Status == ApplicationStatus.Shortlisted)
+                                        {
+                                            <span class="badge bg-info">@app.Status</span>
+                                        }
+                                        else if (app.Status == ApplicationStatus.Interviewed)
+                                        {
+                                            <span class="badge bg-warning text-dark">@app.Status</span>
+                                        }
+                                        else if (app.Status == ApplicationStatus.Accepted)
+                                        {
+                                            <span class="badge bg-success">@app.Status</span>
+                                        }
+                                        else if (app.Status == ApplicationStatus.Rejected)
+                                        {
+                                            <span class="badge bg-danger">@app.Status</span>
+                                        }
+                                    </div>
+                                    <div class="mt-1">
+                                        @if (app.IsViewed)
+                                        {
+                                            <small class="text-success"><i class="fas fa-check-circle me-1"></i>Viewed by employer on @app.ViewedOn?.ToString("MMM dd, yyyy")</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark"><i class="fas fa-exclamation-circle me-1"></i>Not viewed yet</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-controller="Application" asp-action="Details" asp-route-id="@app.Id" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-file-alt me-1"></i>Application Details
+                                        </a>
+                                        <a asp-controller="Job" asp-action="Details" asp-route-id="@app.JobId" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>View Job
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            @if (!string.IsNullOrEmpty(app.AdminFeedback))
+                            {
+                                <tr>
+                                    <td colspan="5" class="bg-light">
+                                        <div class="p-3">
+                                            <h6 class="mb-2"><i class="fas fa-comment-alt me-2"></i>Feedback</h6>
+                                            <p class="mb-0 fst-italic text-muted">@app.AdminFeedback</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary bg-opacity-10">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Application Status Guide</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <span class="badge bg-primary me-2">Submitted</span>
+                                Your application has been received.
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-info me-2">Under Review</span>
+                                Your application is being reviewed by the employer.
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-info me-2">Shortlisted</span>
+                                You've been shortlisted for the next stage.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <span class="badge bg-warning text-dark me-2">Interviewed</span>
+                                You've completed an interview for this position.
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-success me-2">Accepted</span>
+                                Congratulations! Your application was successful.
+                            </li>
+                            <li>
+                                <span class="badge bg-danger me-2">Rejected</span>
+                                Your application was not selected at this time.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-center mt-4">
+            @Html.PagedListPager(Model, page => Url.Action("MyApplications", new { page }))
+        </div>
+    }
+</div>

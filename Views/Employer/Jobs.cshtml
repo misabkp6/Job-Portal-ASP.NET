@@ -1,0 +1,194 @@
+@model X.PagedList.IPagedList<JobPortal.Models.Job>
+@using JobPortal.Models.Enums
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+
+@{
+    ViewData["Title"] = "Manage Jobs";
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0"><i class="fas fa-briefcase me-2"></i>Manage Jobs</h3>
+            <a asp-controller="Job" asp-action="Post" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Post New Job
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        
+        <!-- Search form -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search jobs..." 
+                           value="@ViewBag.SearchTerm">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </form>
+        
+        @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Found @ViewBag.SearchCount results for "@ViewBag.SearchTerm"
+                <a asp-action="Jobs" class="alert-link float-end">Clear Search</a>
+            </div>
+        }
+        
+        <!-- Jobs table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Location</th>
+                        <th>Type</th>
+                        <th>Posted</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count > 0)
+                    {
+                        foreach (var job in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-medium">@job.Title</div>
+                                    <div class="small text-muted">@job.Company</div>
+                                </td>
+                                <td>@job.Location</td>
+                                <td>
+                                    @{
+                                        string jobTypeBadge = "bg-secondary";
+                                        switch (job.JobType)
+                                        {
+                                            case JobType.FullTime:
+                                                jobTypeBadge = "bg-primary";
+                                                break;
+                                            case JobType.PartTime:
+                                                jobTypeBadge = "bg-info";
+                                                break;
+                                            case JobType.Contract:
+                                                jobTypeBadge = "bg-warning";
+                                                break;
+                                            case JobType.Internship:
+                                                jobTypeBadge = "bg-success";
+                                                break;
+                                            case JobType.Freelance:
+                                                jobTypeBadge = "bg-purple";
+                                                break;
+                                        }
+                                    }
+                                    <span class="badge @jobTypeBadge">@job.JobType</span>
+                                </td>
+                                <td>@job.PostedDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    @{
+                                        string statusBadge = "bg-secondary";
+                                        switch (job.Status)
+                                        {
+                                            case JobStatus.Active:
+                                                statusBadge = "bg-success";
+                                                break;
+                                            case JobStatus.Draft:
+                                                statusBadge = "bg-secondary";
+                                                break;
+                                            case JobStatus.Expired:
+                                                statusBadge = "bg-danger";
+                                                break;
+                                            case JobStatus.Filled:
+                                                statusBadge = "bg-info";
+                                                break;
+                                        }
+                                    }
+                                    <span class="badge @statusBadge">@job.Status</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-controller="Job" asp-action="Details" asp-route-id="@job.Id" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-controller="Job" asp-action="Edit" asp-route-id="@job.Id" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-controller="Job" asp-action="Delete" asp-route-id="@job.Id" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('Are you sure you want to delete this job?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-briefcase fa-3x mb-3"></i>
+                                    <h5>No jobs found</h5>
+                                    <p>You haven't posted any jobs yet. Start by creating a new job.</p>
+                                    <a asp-controller="Job" asp-action="Post" class="btn btn-primary mt-2">
+                                        <i class="fas fa-plus-circle me-2"></i>Post New Job
+                                    </a>
+                                    
+                                    <!-- Debugging information -->
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <div class="alert alert-info mt-3">
+                                            <h6>Debugging Information</h6>
+                                            <p>Current User: @User.Identity.Name</p>
+                                            <p>Is in Employer role: @User.IsInRole("Employer")</p>
+                                            <hr/>
+                                            <p>
+                                                <a asp-controller="Job" asp-action="Post" class="btn btn-sm btn-warning">
+                                                    Try Creating a Test Job
+                                                </a>
+                                            </p>
+                                            <p class="mt-2 text-danger">
+                                                If you created jobs earlier, they may be using a different ID format.
+                                                The system has been updated to use your email as the ID consistently.
+                                            </p>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        @if (Model.Count > 0)
+        {
+            <div class="d-flex justify-content-center mt-4">
+                @Html.PagedListPager(Model, page => Url.Action("Jobs", new { page, searchTerm = ViewBag.SearchTerm }), 
+                    new PagedListRenderOptions {
+                        LiElementClasses = new string[] { "page-item" },
+                        PageClasses = new string[] { "page-link" },
+                        UlElementClasses = new string[] { "pagination" },
+                        MaximumPageNumbersToDisplay = 5
+                    })
+            </div>
+        }
+    </div>
+</div>

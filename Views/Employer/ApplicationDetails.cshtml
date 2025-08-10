@@ -1,0 +1,274 @@
+@model JobPortal.Models.Application
+@using JobPortal.Models.Enums
+
+@{
+    ViewData["Title"] = "Application Details";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Application Details
+                    </h3>
+                    <a asp-controller="Employer" asp-action="Applications" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Applications
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Left column: Applicant info -->
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Applicant Information</h5>
+                                <span class="badge bg-primary">Applied on @Model.AppliedOn.ToString("MMM dd, yyyy")</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-3 fw-bold">Name:</div>
+                                    <div class="col-md-9">@Model.ApplicantName</div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-3 fw-bold">Email:</div>
+                                    <div class="col-md-9">@Model.ApplicantEmail</div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-3 fw-bold">Phone:</div>
+                                    <div class="col-md-9">@(Model.PhoneNumber ?? "Not provided")</div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-3 fw-bold">Resume:</div>
+                                    <div class="col-md-9">
+                                        @if (!string.IsNullOrEmpty(Model.ResumePath))
+                                        {
+                                            <a href="/@Model.ResumePath" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-file-pdf me-2"></i>View Resume
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No resume provided</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-3 fw-bold">Cover Letter:</div>
+                                    <div class="col-md-9">
+                                        @if (!string.IsNullOrEmpty(Model.CoverLetter))
+                                        {
+                                            <div class="cover-letter p-3 border rounded bg-light">
+                                                @Model.CoverLetter
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No cover letter provided</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Job Information</h5>
+                            </div>
+                            <div class="card-body">
+                                @if (Model.Job != null)
+                                {
+                                    <div class="row mb-3">
+                                        <div class="col-md-3 fw-bold">Job Title:</div>
+                                        <div class="col-md-9">@Model.Job.Title</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-3 fw-bold">Company:</div>
+                                        <div class="col-md-9">@Model.Job.Company</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-3 fw-bold">Location:</div>
+                                        <div class="col-md-9">@Model.Job.Location</div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-3 fw-bold">Job Type:</div>
+                                        <div class="col-md-9">
+                                            @{
+                                                string jobTypeBadge = "bg-secondary";
+                                                
+                                                switch (Model.Job.JobType)
+                                                {
+                                                    case JobType.FullTime:
+                                                        jobTypeBadge = "bg-primary";
+                                                        break;
+                                                    case JobType.PartTime:
+                                                        jobTypeBadge = "bg-info";
+                                                        break;
+                                                    case JobType.Contract:
+                                                        jobTypeBadge = "bg-warning";
+                                                        break;
+                                                    case JobType.Internship:
+                                                        jobTypeBadge = "bg-success";
+                                                        break;
+                                                    case JobType.Freelance:
+                                                        jobTypeBadge = "bg-purple";
+                                                        break;
+                                                }
+                                            }
+                                            <span class="badge @jobTypeBadge">@Model.Job.JobType</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <a asp-controller="Job" asp-action="Details" asp-route-id="@Model.JobId" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye me-2"></i>View Job Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Job information not available
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right column: Status and actions -->
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Application Status</h5>
+                            </div>
+                            <div class="card-body">
+                                @{
+                                    string statusBadge = "bg-secondary";
+                                    
+                                    switch (Model.Status)
+                                    {
+                                        case ApplicationStatus.Submitted:
+                                            statusBadge = "bg-info";
+                                            break;
+                                        case ApplicationStatus.UnderReview:
+                                            statusBadge = "bg-primary";
+                                            break;
+                                        case ApplicationStatus.Shortlisted:
+                                            statusBadge = "bg-warning";
+                                            break;
+                                        case ApplicationStatus.Interviewed:
+                                            statusBadge = "bg-indigo";
+                                            break;
+                                        case ApplicationStatus.Accepted:
+                                            statusBadge = "bg-success";
+                                            break;
+                                        case ApplicationStatus.Rejected:
+                                            statusBadge = "bg-danger";
+                                            break;
+                                    }
+                                }
+                                <div class="text-center mb-4">
+                                    <div class="display-6 fw-bold">
+                                        <span class="badge @statusBadge p-3 w-100">@Model.Status</span>
+                                    </div>
+                                    
+                                    @if(Model.LastUpdated.HasValue)
+                                    {
+                                        <p class="text-muted mt-2">
+                                            Last updated on @Model.LastUpdated.Value.ToString("MMM dd, yyyy")
+                                        </p>
+                                    }
+                                </div>
+
+                                <form asp-action="UpdateApplicationStatus" method="post">
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Change Status:</label>
+                                        <select name="status" class="form-select">
+                                            @if (Model.Status == ApplicationStatus.Submitted)
+                                            {
+                                                <option value="@ApplicationStatus.Submitted" selected>Submitted</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@ApplicationStatus.Submitted">Submitted</option>
+                                            }
+                                            
+                                            @if (Model.Status == ApplicationStatus.UnderReview)
+                                            {
+                                                <option value="@ApplicationStatus.UnderReview" selected>Under Review</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@ApplicationStatus.UnderReview">Under Review</option>
+                                            }
+                                            
+                                            @if (Model.Status == ApplicationStatus.Shortlisted)
+                                            {
+                                                <option value="@ApplicationStatus.Shortlisted" selected>Shortlisted</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@ApplicationStatus.Shortlisted">Shortlisted</option>
+                                            }
+                                            
+                                            @if (Model.Status == ApplicationStatus.Interviewed)
+                                            {
+                                                <option value="@ApplicationStatus.Interviewed" selected>Interviewed</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@ApplicationStatus.Interviewed">Interviewed</option>
+                                            }
+                                            
+                                            @if (Model.Status == ApplicationStatus.Accepted)
+                                            {
+                                                <option value="@ApplicationStatus.Accepted" selected>Accepted</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@ApplicationStatus.Accepted">Accepted</option>
+                                            }
+                                            
+                                            @if (Model.Status == ApplicationStatus.Rejected)
+                                            {
+                                                <option value="@ApplicationStatus.Rejected" selected>Rejected</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@ApplicationStatus.Rejected">Rejected</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Feedback to Applicant:</label>
+                                        <textarea name="feedback" class="form-control" rows="5">@Model.AdminFeedback</textarea>
+                                        <div class="form-text">This feedback will be visible to the applicant</div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i>Update Status
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="mailto:@Model.ApplicantEmail" class="btn btn-outline-primary">
+                                <i class="fas fa-envelope me-2"></i>Contact Applicant
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

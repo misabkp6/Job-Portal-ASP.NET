@@ -1,0 +1,300 @@
+@model JobPortal.Models.Application
+@using JobPortal.Models.Enums
+
+@{
+    ViewData["Title"] = "Application Details";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Application" asp-action="MyApplications">My Applications</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Application Details</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Application Details Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Application Details</h4>
+                    <span class="badge rounded-pill bg-white text-primary fs-6">
+                        @if (Model.Status == ApplicationStatus.Submitted)
+                        {
+                            <text>Submitted</text>
+                        }
+                        else if (Model.Status == ApplicationStatus.UnderReview)
+                        {
+                            <text>Under Review</text>
+                        }
+                        else if (Model.Status == ApplicationStatus.Shortlisted)
+                        {
+                            <text>Shortlisted</text>
+                        }
+                        else if (Model.Status == ApplicationStatus.Interviewed)
+                        {
+                            <text>Interviewed</text>
+                        }
+                        else if (Model.Status == ApplicationStatus.Accepted)
+                        {
+                            <text>Accepted</text>
+                        }
+                        else if (Model.Status == ApplicationStatus.Rejected)
+                        {
+                            <text>Rejected</text>
+                        }
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">Job Title</div>
+                        <div class="col-md-8 fw-bold">@Model.Job?.Title</div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">Company</div>
+                        <div class="col-md-8">@Model.Job?.Company</div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">Applied On</div>
+                        <div class="col-md-8">@Model.AppliedOn.ToString("MMM dd, yyyy HH:mm tt")</div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">Application Status</div>
+                        <div class="col-md-8">
+                            @if (Model.IsViewed)
+                            {
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <span class="badge bg-success p-2">
+                                            <i class="fas fa-check-circle me-1"></i>Viewed by employer
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">First viewed on</small>
+                                        <strong>@Model.ViewedOn?.ToString("MMM dd, yyyy")</strong>
+                                        <small class="text-muted">at @Model.ViewedOn?.ToString("HH:mm tt")</small>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning" role="alert">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-exclamation-circle fa-2x"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="alert-heading mb-1">Pending Review</h6>
+                                            <p class="mb-0">Your application has not yet been viewed by the employer</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">Last Updated</div>
+                        <div class="col-md-8">@(Model.LastUpdated?.ToString("MMM dd, yyyy HH:mm tt") ?? "N/A")</div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">Applicant Name</div>
+                        <div class="col-md-8">@Model.ApplicantName</div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">Email</div>
+                        <div class="col-md-8">@Model.ApplicantEmail</div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">Phone</div>
+                        <div class="col-md-8">@(Model.PhoneNumber ?? "Not provided")</div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.ResumePath))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-4 text-muted">Resume</div>
+                            <div class="col-md-8">
+                                <a href="@Model.ResumePath" class="btn btn-outline-primary btn-sm" target="_blank">
+                                    <i class="fas fa-file-pdf me-2"></i>View Resume
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.CoverLetter))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h5 class="mb-3">Cover Letter</h5>
+                                <div class="p-3 bg-light rounded">
+                                    <p style="white-space: pre-line">@Model.CoverLetter</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.AdminFeedback))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h5 class="mb-3">Employer Feedback</h5>
+                                <div class="p-3 bg-light rounded">
+                                    <p style="white-space: pre-line">@Model.AdminFeedback</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Job Details Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary bg-opacity-10">
+                    <h5 class="mb-0">Job Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">@Model.Job?.Title</h5>
+                        <span class="badge bg-primary">@Model.Job?.JobType</span>
+                    </div>
+                    
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-building me-2"></i>@Model.Job?.Company
+                        <span class="mx-2">•</span>
+                        <i class="fas fa-map-marker-alt me-2"></i>@Model.Job?.Location
+                        <span class="mx-2">•</span>
+                        <i class="fas fa-dollar-sign me-2"></i>@Model.Job?.Salary.ToString("C0")
+                    </p>
+                    
+                    <div class="mb-3">
+                        <h6>Job Description</h6>
+                        <p>@Model.Job?.Description</p>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a asp-controller="Job" asp-action="Details" asp-route-id="@Model.JobId" class="btn btn-primary">
+                            <i class="fas fa-eye me-2"></i>View Full Job Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Application Status Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Application Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="application-timeline">
+                        @foreach (var timelineItem in ViewBag.StatusTimeline)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">@timelineItem.Key</h6>
+                                    <p class="text-muted small mb-0">@timelineItem.Value.ToString("MMM dd, yyyy HH:mm tt")</p>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.Status == ApplicationStatus.Submitted)
+                        {
+                            <div class="timeline-item pending">
+                                <div class="timeline-marker pending"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1 text-muted">Waiting for Employer Review</h6>
+                                    <p class="text-muted small mb-0">Your application is awaiting review</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>What's Next?</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Status == ApplicationStatus.Submitted)
+                    {
+                        <p>Your application has been submitted and is waiting for the employer to review it. This process typically takes 1-2 weeks.</p>
+                    }
+                    else if (Model.Status == ApplicationStatus.UnderReview)
+                    {
+                        <p>Your application is currently being reviewed by the employer. You may be contacted soon for more information or next steps.</p>
+                    }
+                    else if (Model.Status == ApplicationStatus.Shortlisted)
+                    {
+                        <p>Congratulations! Your application has been shortlisted. The employer may contact you soon to schedule an interview.</p>
+                    }
+                    else if (Model.Status == ApplicationStatus.Interviewed)
+                    {
+                        <p>You have completed an interview for this position. The employer is considering all candidates and will make a decision soon.</p>
+                    }
+                    else if (Model.Status == ApplicationStatus.Accepted)
+                    {
+                        <p>Congratulations! Your application has been accepted. The employer may contact you with more details about the next steps.</p>
+                    }
+                    else if (Model.Status == ApplicationStatus.Rejected)
+                    {
+                        <p>We're sorry, but your application was not selected for this position. Don't be discouraged - keep applying to other opportunities!</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .application-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 25px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        
+        .timeline-item:last-child::before {
+            height: 0;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -27px;
+            top: 0;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+            z-index: 1;
+        }
+        
+        .timeline-marker.pending {
+            background-color: #e9ecef;
+            border: 2px solid #adb5bd;
+        }
+        
+        .timeline-content {
+            padding-bottom: 10px;
+        }
+    </style>
+}

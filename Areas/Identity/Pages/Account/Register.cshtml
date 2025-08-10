@@ -1,0 +1,126 @@
+﻿@page
+@model JobPortal.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg">
+                <div class="row g-0">
+                    <!-- Left side form -->
+                    <div class="col-lg-6">
+                        <div class="card-body p-lg-5 p-4">
+                            <div class="text-center mb-4">
+                                <h1 class="h3 fw-bold">Create Your Account</h1>
+                                <p class="text-muted">Join JobPortal to start your career journey</p>
+                            </div>
+
+                            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Input.Email" class="form-label">
+                                        <i class="fas fa-envelope me-2 text-muted"></i>Email address
+                                    </label>
+                                    <input asp-for="Input.Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" />
+                                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Input.Password" class="form-label">
+                                        <i class="fas fa-lock me-2 text-muted"></i>Password
+                                    </label>
+                                    <input asp-for="Input.Password" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" />
+                                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label asp-for="Input.ConfirmPassword" class="form-label">
+                                        <i class="fas fa-check-circle me-2 text-muted"></i>Confirm Password
+                                    </label>
+                                    <input asp-for="Input.ConfirmPassword" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" />
+                                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label asp-for="Input.Role" class="form-label">
+                                        <i class="fas fa-user-tag me-2 text-muted"></i>I'm registering as
+                                    </label>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check border rounded p-3 @(Model.Input?.Role == "Applicant" ? "bg-light border-primary" : "")">
+                                                <input asp-for="Input.Role" type="radio" value="Applicant" class="form-check-input" id="roleJobSeeker" checked />
+                                                <label class="form-check-label w-100" for="roleJobSeeker">
+                                                    <i class="fas fa-user me-2 text-primary"></i><strong>Job Seeker</strong>
+                                                    <p class="text-muted small mb-0 mt-1">Looking for job opportunities</p>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check border rounded p-3 @(Model.Input?.Role == "Employer" ? "bg-light border-primary" : "")">
+                                                <input asp-for="Input.Role" type="radio" value="Employer" class="form-check-input" id="roleEmployer" />
+                                                <label class="form-check-label w-100" for="roleEmployer">
+                                                    <i class="fas fa-building me-2 text-primary"></i><strong>Employer</strong>
+                                                    <p class="text-muted small mb-0 mt-1">Hiring talent for your company</p>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="Input.Role" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="d-grid mb-4">
+                                    <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-user-plus me-2"></i>Create Account
+                                    </button>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <p class="mb-0">Already have an account? 
+                                        <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="fw-bold text-primary">Sign In</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Right side image -->
+                    <div class="col-lg-6 d-none d-lg-block">
+                        <div class="h-100" style="background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); border-radius: 0 0.5rem 0.5rem 0;">
+                            <div class="d-flex flex-column justify-content-center h-100 p-5 text-white">
+                                <h2 class="display-6 fw-bold mb-4">Start Your Journey</h2>
+                                <p class="lead">Create an account to unlock your career potential with JobPortal.</p>
+                                <div class="mt-5">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="bg-white rounded-circle p-2 me-3">
+                                            <i class="fas fa-user-tie text-primary"></i>
+                                        </div>
+                                        <div>Create your professional profile</div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="bg-white rounded-circle p-2 me-3">
+                                            <i class="fas fa-bell text-primary"></i>
+                                        </div>
+                                        <div>Get job alerts matching your skills</div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-white rounded-circle p-2 me-3">
+                                            <i class="fas fa-rocket text-primary"></i>
+                                        </div>
+                                        <div>Advance your career with top opportunities</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

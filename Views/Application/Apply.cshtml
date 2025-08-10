@@ -1,0 +1,180 @@
+@model JobPortal.Models.Application
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Apply for Job";
+    var user = await UserManager.GetUserAsync(User);
+}
+
+<div class="container py-4">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white py-3">
+            <h2 class="h4 mb-0"><i class="fas fa-paper-plane me-2"></i>Apply to: @ViewBag.JobTitle</h2>
+        </div>
+        
+        <div class="card-body p-4">
+            @if (!SignInManager.IsSignedIn(User))
+            {
+                <div class="alert alert-danger">
+                    <p>You must be signed in to apply for jobs. Please <a asp-area="Identity" asp-page="/Account/Login">login</a> or <a asp-area="Identity" asp-page="/Account/Register">register</a> first.</p>
+                </div>
+            }
+            else
+            {
+                <form asp-action="Apply" method="post" enctype="multipart/form-data" id="applicationForm">
+                    <input type="hidden" name="JobId" value="@ViewBag.JobId" />
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label asp-for="ApplicantName" class="form-label">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input asp-for="ApplicantName" class="form-control" required 
+                                       placeholder="Your full name as it appears on your ID" 
+                                       value="@(user?.UserName)" 
+                                       maxlength="100" />
+                            </div>
+                            <span asp-validation-for="ApplicantName" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label asp-for="ApplicantEmail" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input asp-for="ApplicantEmail" type="email" class="form-control" required 
+                                       placeholder="Your email address for communications" 
+                                       value="@(user?.Email)" 
+                                       maxlength="100" />
+                            </div>
+                            <span asp-validation-for="ApplicantEmail" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input asp-for="PhoneNumber" class="form-control" 
+                                       placeholder="Your contact phone number" 
+                                       maxlength="50" />
+                            </div>
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Upload Resume (PDF/DOCX)</label>
+                            <div class="input-group">
+                                <input type="file" name="ResumeFile" id="resumeFile" class="form-control" required accept=".pdf,.docx,.doc" />
+                                <span class="input-group-text"><i class="fas fa-file-alt"></i></span>
+                            </div>
+                            <small class="text-muted">Max file size: 5MB. Accepted formats: PDF, DOCX, DOC</small>
+                            <div class="invalid-feedback" id="resumeFileError"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="CoverLetter" class="form-label">Cover Letter</label>
+                        <textarea asp-for="CoverLetter" class="form-control" rows="6" 
+                                 placeholder="Why are you interested in this position? What makes you the ideal candidate? Highlight relevant skills and experience."
+                                 maxlength="5000"></textarea>
+                        <span asp-validation-for="CoverLetter" class="text-danger"></span>
+                        <small class="text-muted">A personalized cover letter can significantly increase your chances of getting noticed.</small>
+                    </div>
+                    
+                    <div id="uploadProgress" class="progress mb-3 d-none">
+                        <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-controller="Job" asp-action="Details" asp-route-id="@ViewBag.JobId" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Job Details
+                        </a>
+                        <button type="submit" class="btn btn-success" id="submitButton">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Application
+                        </button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // File validation
+            const resumeFile = document.getElementById('resumeFile');
+            const resumeFileError = document.getElementById('resumeFileError');
+            const submitButton = document.getElementById('submitButton');
+            const applicationForm = document.getElementById('applicationForm');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const uploadProgressBar = document.getElementById('uploadProgressBar');
+            
+            // Max file size in bytes (5MB)
+            const MAX_FILE_SIZE = 5 * 1024 * 1024;
+            
+            resumeFile.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    
+                    // Check file size
+                    if (file.size > MAX_FILE_SIZE) {
+                        resumeFileError.textContent = 'File size exceeds the maximum limit of 5MB.';
+                        resumeFile.classList.add('is-invalid');
+                        submitButton.disabled = true;
+                        return;
+                    }
+                    
+                    // Check file type
+                    const acceptedTypes = ['.pdf', '.docx', '.doc'];
+                    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                    
+                    if (!acceptedTypes.includes(fileExtension)) {
+                        resumeFileError.textContent = 'Invalid file type. Please upload a PDF, DOCX, or DOC file.';
+                        resumeFile.classList.add('is-invalid');
+                        submitButton.disabled = true;
+                        return;
+                    }
+                    
+                    // File is valid
+                    resumeFile.classList.remove('is-invalid');
+                    submitButton.disabled = false;
+                }
+            });
+            
+            // Form submission
+            applicationForm.addEventListener('submit', function(event) {
+                if (!applicationForm.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                } else {
+                    // Show progress bar for file upload
+                    uploadProgress.classList.remove('d-none');
+                    
+                    // Disable the submit button to prevent multiple submissions
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
+                    
+                    // Simulate upload progress (in a real app, you would use XHR or Fetch API for actual progress)
+                    let progress = 0;
+                    const interval = setInterval(function() {
+                        progress += 5;
+                        uploadProgressBar.style.width = progress + '%';
+                        uploadProgressBar.setAttribute('aria-valuenow', progress);
+                        
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                        }
+                    }, 100);
+                }
+                
+                applicationForm.classList.add('was-validated');
+            });
+        });
+    </script>
+}

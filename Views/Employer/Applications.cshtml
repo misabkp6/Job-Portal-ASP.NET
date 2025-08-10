@@ -1,0 +1,167 @@
+@model X.PagedList.IPagedList<JobPortal.Models.Application>
+@using JobPortal.Models.Enums
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+
+@{
+    ViewData["Title"] = "Manage Applications";
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0"><i class="fas fa-file-alt me-2"></i>Manage Applications</h3>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Search form -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search applications..." 
+                           value="@ViewBag.SearchTerm">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </form>
+        
+        @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Found @ViewBag.SearchCount results for "@ViewBag.SearchTerm"
+                <a asp-action="Applications" class="alert-link float-end">Clear Search</a>
+            </div>
+        }
+        
+        <!-- Applications table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Applicant</th>
+                        <th>Job</th>
+                        <th>Applied On</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count > 0)
+                    {
+                        foreach (var app in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-light rounded-circle text-center me-2">
+                                            <span class="text-muted">@app.ApplicantName.Substring(0, 1).ToUpper()</span>
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium">@app.ApplicantName</div>
+                                            <div class="small text-muted">@app.ApplicantEmail</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (app.Job != null)
+                                    {
+                                        <div class="fw-medium">@app.Job.Title</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="fw-medium text-muted">Unknown Job</div>
+                                    }
+                                </td>
+                                <td>@app.AppliedOn.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    @{
+                                        string badgeClass = "bg-secondary";
+                                        
+                                        switch (app.Status)
+                                        {
+                                            case ApplicationStatus.Submitted:
+                                                badgeClass = "bg-info";
+                                                break;
+                                            case ApplicationStatus.UnderReview:
+                                                badgeClass = "bg-primary";
+                                                break;
+                                            case ApplicationStatus.Shortlisted:
+                                                badgeClass = "bg-warning";
+                                                break;
+                                            case ApplicationStatus.Interviewed:
+                                                badgeClass = "bg-indigo";
+                                                break;
+                                            case ApplicationStatus.Accepted:
+                                                badgeClass = "bg-success";
+                                                break;
+                                            case ApplicationStatus.Rejected:
+                                                badgeClass = "bg-danger";
+                                                break;
+                                        }
+                                    }
+                                    <span class="badge @badgeClass">@app.Status</span>
+                                </td>
+                                <td>
+                                    <a asp-controller="Employer" asp-action="ApplicationDetails" asp-route-id="@app.Id" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <h5>No applications found</h5>
+                                    <p>No applications found matching your jobs.</p>
+                                    
+                                    <div class="alert alert-info mt-3">
+                                        <h6>Debugging Information</h6>
+                                        <p>Your Employer ID: @ViewBag.EmployerId</p>
+                                        <p>Your Email: @ViewBag.UserEmail</p>
+                                        <p>Number of Jobs Posted: @ViewBag.JobCount</p>
+                                        <p>Job IDs: @ViewBag.JobIds</p>
+                                        <p>Total Applications in System: @ViewBag.TotalAppsInSystem</p>
+                                        <p>Direct Application Count: @ViewBag.DirectAppCount</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        @if (Model.Count > 0)
+        {
+            <div class="d-flex justify-content-center mt-4">
+                @Html.PagedListPager(Model, page => Url.Action("Applications", new { page, searchTerm = ViewBag.SearchTerm }), 
+                    new PagedListRenderOptions {
+                        LiElementClasses = new string[] { "page-item" },
+                        PageClasses = new string[] { "page-link" },
+                        UlElementClasses = new string[] { "pagination" },
+                        MaximumPageNumbersToDisplay = 5
+                    })
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+        }
+    </style>
+}

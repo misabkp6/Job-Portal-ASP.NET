@@ -1,0 +1,384 @@
+@model X.PagedList.IPagedList<JobPortal.Models.Job>
+@using Microsoft.AspNetCore.Identity
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Job Listings</h2>
+    
+    @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+    {
+        <a asp-controller="Job" asp-action="Post" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Post a Job
+        </a>
+    }
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary bg-opacity-10 py-3">
+        <h5 class="mb-0"><i class="fas fa-search me-2"></i>Search Jobs</h5>
+    </div>
+    <div class="card-body">
+        <form asp-controller="Job" asp-action="Index" method="get" id="jobSearchForm">
+            <div class="row g-3">
+                <!-- Basic Search -->
+                <div class="col-md-6">
+                    <label class="form-label">Keyword</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-keyboard"></i></span>
+                        <input type="text" name="Keyword" class="form-control" placeholder="Job title, skills, or keywords" value="@ViewBag.Search?.Keyword">
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                        <input type="text" name="Location" class="form-control" placeholder="City, state, or zip code" value="@ViewBag.Search?.Location">
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <button type="button" class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
+                        <i class="fas fa-sliders-h me-2"></i>Advanced Filters
+                    </button>
+                </div>
+                
+                <!-- Advanced Search (Collapsible) -->
+                <div class="col-12 collapse" id="advancedSearch">
+                    <div class="card card-body bg-light border-0">
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Job Type</label>
+                                <select name="JobType" class="form-select">
+                                    <option value="">All Job Types</option>
+                                    @foreach(var jobType in ViewBag.JobTypes ?? new List<SelectListItem>())
+                                    {
+                                        <option value="@jobType.Value" selected="@jobType.Selected">@jobType.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Company</label>
+                                <select name="Company" class="form-select">
+                                    <option value="">All Companies</option>
+                                    @foreach(var company in ViewBag.Companies ?? new List<string>())
+                                    {
+                                        <option value="@company" selected="@(ViewBag.Search?.Company == company)">@company</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Min Salary</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="MinSalary" class="form-control" placeholder="Minimum" value="@ViewBag.Search?.MinSalary">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Max Salary</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="MaxSalary" class="form-control" placeholder="Maximum" value="@ViewBag.Search?.MaxSalary">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Tags</label>
+                                <select name="Tags" class="form-select">
+                                    <option value="">All Tags</option>
+                                    @foreach(var tag in ViewBag.Tags ?? new List<string>())
+                                    {
+                                        <option value="@tag" selected="@(ViewBag.Search?.Tags == tag)">@tag</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Sort By</label>
+                                <div class="input-group">
+                                    <select name="SortBy" class="form-select">
+                                        <option value="date" selected="@(ViewBag.Search?.SortBy == "date")">Date Posted</option>
+                                        <option value="title" selected="@(ViewBag.Search?.SortBy == "title")">Job Title</option>
+                                        <option value="company" selected="@(ViewBag.Search?.SortBy == "company")">Company</option>
+                                        <option value="salary" selected="@(ViewBag.Search?.SortBy == "salary")">Salary</option>
+                                    </select>
+                                    <select name="SortAscending" class="form-select" style="max-width: 100px;">
+                                        <option value="false" selected="@(!ViewBag.Search?.SortAscending ?? true)">Desc</option>
+                                        <option value="true" selected="@(ViewBag.Search?.SortAscending ?? false)">Asc</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="Remote" value="true" id="remoteCheck" checked="@(ViewBag.Search?.Remote == true)">
+                                    <label class="form-check-label" for="remoteCheck">
+                                        <i class="fas fa-laptop-house me-2"></i>Remote Jobs Only
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 d-flex justify-content-between">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search me-2"></i>Search Jobs
+                    </button>
+                    
+                    <a asp-controller="Job" asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-times-circle me-2"></i>Clear Filters
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Hidden pagination fields to preserve state -->
+            <input type="hidden" name="Page" value="1" id="pageField">
+            <input type="hidden" name="PageSize" value="@(ViewBag.Search?.PageSize ?? 10)" id="pageSizeField">
+        </form>
+        
+        <!-- Filter tags -->
+        @{
+            var hasFilters = !string.IsNullOrEmpty(ViewBag.Search?.Keyword) ||
+                !string.IsNullOrEmpty(ViewBag.Search?.Location) ||
+                ViewBag.Search?.JobType != null ||
+                ViewBag.Search?.MinSalary != null ||
+                ViewBag.Search?.MaxSalary != null ||
+                !string.IsNullOrEmpty(ViewBag.Search?.Company) ||
+                !string.IsNullOrEmpty(ViewBag.Search?.Tags) ||
+                ViewBag.Search?.Remote == true;
+        }
+        
+        @if (hasFilters)
+        {
+            <div class="mt-3 d-flex flex-wrap gap-2">
+                @if (!string.IsNullOrEmpty(ViewBag.Search?.Keyword))
+                {
+                    <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                        Keyword: @ViewBag.Search.Keyword
+                        <a href="javascript:void(0)" onclick="removeFilter('Keyword')" class="ms-2 text-primary"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                }
+                
+                @if (!string.IsNullOrEmpty(ViewBag.Search?.Location))
+                {
+                    <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                        Location: @ViewBag.Search.Location
+                        <a href="javascript:void(0)" onclick="removeFilter('Location')" class="ms-2 text-primary"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                }
+                
+                @if (ViewBag.Search?.JobType != null)
+                {
+                    <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                        Job Type: @ViewBag.Search.JobType
+                        <a href="javascript:void(0)" onclick="removeFilter('JobType')" class="ms-2 text-primary"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                }
+                
+                @if (!string.IsNullOrEmpty(ViewBag.Search?.Company))
+                {
+                    <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                        Company: @ViewBag.Search.Company
+                        <a href="javascript:void(0)" onclick="removeFilter('Company')" class="ms-2 text-primary"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                }
+                
+                @if (ViewBag.Search?.MinSalary != null || ViewBag.Search?.MaxSalary != null)
+                {
+                    <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                        Salary: @(ViewBag.Search?.MinSalary != null ? $"${ViewBag.Search.MinSalary}" : "$0") - @(ViewBag.Search?.MaxSalary != null ? $"${ViewBag.Search.MaxSalary}" : "Any")
+                        <a href="javascript:void(0)" onclick="removeFilter('Salary')" class="ms-2 text-primary"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                }
+                
+                @if (!string.IsNullOrEmpty(ViewBag.Search?.Tags))
+                {
+                    <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                        Tag: @ViewBag.Search.Tags
+                        <a href="javascript:void(0)" onclick="removeFilter('Tags')" class="ms-2 text-primary"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                }
+                
+                @if (ViewBag.Search?.Remote == true)
+                {
+                    <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
+                        Remote Only
+                        <a href="javascript:void(0)" onclick="removeFilter('Remote')" class="ms-2 text-primary"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>No job listings match your search criteria. Try adjusting your filters.
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="mb-0">
+            <strong>@Model.TotalItemCount</strong> jobs found
+        </p>
+        
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-sort me-1"></i>
+                Page Size: @(ViewBag.Search?.PageSize ?? 10)
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="changePageSize(5)">5 per page</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="changePageSize(10)">10 per page</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="changePageSize(20)">20 per page</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="changePageSize(50)">50 per page</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="row">
+        @foreach (var job in Model)
+        {
+            <div class="col-lg-6 mb-4">
+                <div class="card job-card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="card-title h5 mb-2">@job.Title</h3>
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="company-name me-3">
+                                        <i class="fas fa-building me-2 text-primary"></i>@job.Company
+                                    </span>
+                                    <span class="job-location">
+                                        <i class="fas fa-map-marker-alt me-2 text-danger"></i>@job.Location
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="ms-2 text-end">
+                                <div class="badge bg-primary bg-opacity-10 text-primary mb-2">@job.JobType</div>
+                                @if (job.Status != JobPortal.Models.Enums.JobStatus.Active)
+                                {
+                                    <div class="badge bg-danger bg-opacity-10 text-danger">@job.Status</div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <p class="card-text text-muted mb-2">@(job.Description?.Length > 150 ? job.Description.Substring(0, 150) + "..." : job.Description)</p>
+                        
+                        <div class="mb-3">
+                            <span class="text-success fw-bold">
+                                <i class="fas fa-money-bill-wave me-1"></i>@job.Salary.ToString("C0") / year
+                            </span>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(job.Tags))
+                        {
+                            <div class="mb-2 d-flex flex-wrap gap-1">
+                                @foreach (var tag in job.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">@tag.Trim()</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        <span class="job-date text-muted">
+                            <i class="fas fa-calendar-alt me-1"></i>Posted @((DateTime.Now - job.PostedDate).TotalDays < 1 ? "today" : 
+                                (DateTime.Now - job.PostedDate).TotalDays < 2 ? "yesterday" :
+                                (int)(DateTime.Now - job.PostedDate).TotalDays + " days ago")
+                        </span>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <a asp-controller="Job" asp-action="Details" asp-route-id="@job.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt me-1"></i>View Details
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-sign-in-alt me-1"></i>Sign in to View
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <!-- Pagination -->
+    <div class="mt-4">
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { 
+            page, 
+            PageSize = ViewBag.Search?.PageSize ?? 10,
+            Keyword = ViewBag.Search?.Keyword,
+            Location = ViewBag.Search?.Location,
+            JobType = ViewBag.Search?.JobType,
+            MinSalary = ViewBag.Search?.MinSalary,
+            MaxSalary = ViewBag.Search?.MaxSalary,
+            Company = ViewBag.Search?.Company,
+            Tags = ViewBag.Search?.Tags,
+            Remote = ViewBag.Search?.Remote,
+            SortBy = ViewBag.Search?.SortBy,
+            SortAscending = ViewBag.Search?.SortAscending
+        }), new PagedListRenderOptions {
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+            UlElementClasses = new string[] { "pagination", "justify-content-center" },
+            MaximumPageNumbersToDisplay = 5
+        })
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Function to change page size
+        function changePageSize(size) {
+            document.getElementById('pageSizeField').value = size;
+            document.getElementById('jobSearchForm').submit();
+        }
+        
+        // Function to remove a specific filter
+        function removeFilter(filterName) {
+            if (filterName === 'Salary') {
+                document.querySelector('input[name="MinSalary"]').value = '';
+                document.querySelector('input[name="MaxSalary"]').value = '';
+            } else if (filterName === 'Remote') {
+                document.querySelector('input[name="Remote"]').checked = false;
+            } else {
+                const input = document.querySelector(`input[name="${filterName}"], select[name="${filterName}"]`);
+                if (input) input.value = '';
+            }
+            document.getElementById('jobSearchForm').submit();
+        }
+        
+        // Initialize advanced search
+        document.addEventListener('DOMContentLoaded', function() {
+            const hasAdvancedFilters = @Json.Serialize(
+                ViewBag.Search?.JobType != null || 
+                ViewBag.Search?.MinSalary != null || 
+                ViewBag.Search?.MaxSalary != null || 
+                !string.IsNullOrEmpty(ViewBag.Search?.Company) || 
+                !string.IsNullOrEmpty(ViewBag.Search?.Tags) || 
+                ViewBag.Search?.Remote == true ||
+                !string.IsNullOrEmpty(ViewBag.Search?.SortBy)
+            );
+            
+            if (hasAdvancedFilters) {
+                const advancedSearch = document.getElementById('advancedSearch');
+                if (advancedSearch) {
+                    new bootstrap.Collapse(advancedSearch, { toggle: true });
+                }
+            }
+        });
+    </script>
+}

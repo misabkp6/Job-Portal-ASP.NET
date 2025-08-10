@@ -1,0 +1,107 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="hero-section py-5 text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">Find Your Dream Career</h1>
+        <p class="lead mb-4">Connecting talented professionals with amazing opportunities</p>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="search-box p-4 bg-white rounded shadow-sm mb-3">
+                    <form asp-controller="Job" asp-action="Index" method="get">
+                        <div class="input-group">
+                            <input type="text" name="searchTerm" class="form-control form-control-lg" placeholder="Search jobs, keywords, companies...">
+                            <button class="btn btn-primary btn-lg" type="submit">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                @if (!SignInManager.IsSignedIn(User))
+                {
+                    <div class="text-center mb-4">
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-user-plus me-2"></i>Register to Apply
+                        </a>
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-success">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <div class="row mt-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-briefcase text-primary mb-3" style="font-size: 2.5rem;"></i>
+                        <h3 class="card-title h5 mb-3">Find Opportunities</h3>
+                        <p class="card-text text-muted">Discover thousands of job opportunities with top employers</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-file-alt text-success mb-3" style="font-size: 2.5rem;"></i>
+                        <h3 class="card-title h5 mb-3">Easy Applications</h3>
+                        <p class="card-text text-muted">Apply with just a few clicks and track your application status</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-chart-line text-accent mb-3" style="font-size: 2.5rem;"></i>
+                        <h3 class="card-title h5 mb-3">Career Growth</h3>
+                        <p class="card-text text-muted">Find the perfect role to advance your professional journey</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="quotes-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Inspiration for Your Career Journey</h2>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <i class="fas fa-quote-left text-primary mb-3" style="font-size: 1.5rem;"></i>
+                        <p class="card-text mb-3">"The only way to do great work is to love what you do. If you haven't found it yet, keep looking. Don't settle."</p>
+                        <p class="text-end fw-bold mb-0">- Steve Jobs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <i class="fas fa-quote-left text-primary mb-3" style="font-size: 1.5rem;"></i>
+                        <p class="card-text mb-3">"Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work."</p>
+                        <p class="text-end fw-bold mb-0">- Steve Jobs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <i class="fas fa-quote-left text-primary mb-3" style="font-size: 1.5rem;"></i>
+                        <p class="card-text mb-3">"The future depends on what you do today. Your career success is determined by your daily choices and actions."</p>
+                        <p class="text-end fw-bold mb-0">- Mahatma Gandhi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
